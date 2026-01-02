@@ -1,0 +1,91 @@
+BGP Multi-AS Lab – Three Routers
+-------------------------------------------------
+This lab simulates a multi-AS BGP network:
+
+R1 (AS 6500) – Edge network with LAN (192.168.10.0/24)
+
+R2 (AS 65001) – Transit router
+
+R3 (AS 65002) – Edge network with LAN (192.168.40.0/24)
+
+Objectives:
+
+Configure point-to-point links
+
+Configure LANs and PCs
+
+Establish BGP neighbors across multiple ASes
+
+Test end-to-end connectivity between LAN PCs
+--------------------------------------------------------
+IP Addressing Table
+Link/Network	Device	IP Address	Subnet Mask
+R1 ↔ R2	R1	192.168.20.1	255.255.255.250
+	R2	192.168.20.2	255.255.255.250
+R2 ↔ R3	R2	192.168.30.1	255.255.255.250
+	R3	192.168.30.2	255.255.255.250
+R1 LAN	R1	192.168.10.1	255.255.255.0
+	PC1	192.168.10.10	255.255.255.0
+	PC2	192.168.10.11	255.255.255.0
+R3 LAN	R3	192.168.40.1	255.255.255.0
+	PC1	192.168.40.20	255.255.255.0
+	PC2	192.168.40.21	255.255.255.0
+---------------------------------------------------------
+Router Configurations
+R1 (AS 6500)
+enable
+conf t
+!
+interface g0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+!
+interface g0/1
+ ip address 192.168.20.1 255.255.255.252
+ no shutdown
+!
+router bgp 6500
+ neighbor 192.168.20.2 remote-as 65001
+ network 192.168.10.0 mask 255.255.255.0
+!
+end
+
+R2 (AS 65001)
+enable
+conf t
+!
+interface g0/0
+ ip address 192.168.20.2 255.255.255.252
+ no shutdown
+!
+interface g0/1
+ ip address 192.168.30.1 255.255.255.252
+ no shutdown
+!
+router bgp 65001
+ neighbor 192.168.20.1 remote-as 6500
+ neighbor 192.168.30.2 remote-as 65002
+ network 192.168.20.0 mask 255.255.255.252
+ network 192.168.30.0 mask 255.255.255.252
+!
+end
+
+R3 (AS 65002)
+enable
+conf t
+!
+interface g0/0
+ ip address 192.168.30.2 255.255.255.252
+ no shutdown
+!
+interface g0/1.40
+ encapsulation dot1Q 40
+ ip address 192.168.40.1 255.255.255.0
+ no shutdown
+!
+router bgp 65002
+ neighbor 192.168.30.1 remote-as 65001
+ network 192.168.40.0 mask 255.255.255.0
+!
+end
